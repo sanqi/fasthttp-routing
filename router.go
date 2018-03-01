@@ -56,7 +56,7 @@ func New() *Router {
 		routes: make(map[string]*Route),
 		stores: make(map[string]routeStore),
 	}
-	r.RouteGroup = *newRouteGroup("", r, make([]Handler, 0))
+	r.RouteGroup = *newRouteGroup("", "", r, make([]Handler, 0))
 	r.NotFound(MethodNotAllowedHandler, NotFoundHandler)
 	r.pool.New = func() interface{} {
 		return &Context{
@@ -71,7 +71,7 @@ func New() *Router {
 func (r *Router) HandleRequest(ctx *fasthttp.RequestCtx) {
 	c := r.pool.Get().(*Context)
 	c.init(ctx)
-	c.handlers, c.pnames = r.find(string(ctx.Method()), string(ctx.Path()), c.pvalues)
+	c.handlers, c.pnames = r.find(string(ctx.Method()), string(c.Host())+string(ctx.Path()), c.pvalues)
 	if err := c.Next(); err != nil {
 		r.handleError(c, err)
 	}

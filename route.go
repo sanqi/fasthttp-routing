@@ -14,6 +14,7 @@ import (
 type Route struct {
 	group      *RouteGroup
 	name, path string
+	domain     string
 	template   string
 }
 
@@ -21,6 +22,7 @@ type Route struct {
 func newRoute(path string, group *RouteGroup) *Route {
 	path = group.prefix + path
 	name := path
+	domain := group.domain
 
 	// an asterisk at the end matches any number of characters
 	if strings.HasSuffix(path, "*") {
@@ -28,21 +30,22 @@ func newRoute(path string, group *RouteGroup) *Route {
 	}
 
 	route := &Route{
+		domain:   domain,
 		group:    group,
 		name:     name,
 		path:     path,
 		template: buildURLTemplate(path),
 	}
-	group.router.routes[name] = route
+	group.router.routes[domain] = route
 
 	return route
 }
 
 // Name sets the name of the route.
 // This method will update the registration of the route in the router as well.
-func (r *Route) Name(name string) *Route {
-	r.name = name
-	r.group.router.routes[name] = r
+func (r *Route) Name(domain string) *Route {
+	r.domain = domain
+	r.group.router.routes[domain] = r
 	return r
 }
 
@@ -121,7 +124,8 @@ func (r *Route) URL(pairs ...interface{}) (s string) {
 // The handlers will be combined with the handlers of the route group.
 func (r *Route) add(method string, handlers []Handler) *Route {
 	hh := combineHandlers(r.group.handlers, handlers)
-	r.group.router.add(method, r.path, hh)
+	r.group.router.add(method, r.domain+r.path, hh)
+	//fmt.Println(r.domain + r.path)
 	return r
 }
 

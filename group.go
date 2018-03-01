@@ -10,14 +10,16 @@ import (
 
 // RouteGroup represents a group of routes that share the same path prefix.
 type RouteGroup struct {
+	domain   string
 	prefix   string
 	router   *Router
 	handlers []Handler
 }
 
 // newRouteGroup creates a new RouteGroup with the given path prefix, router, and handlers.
-func newRouteGroup(prefix string, router *Router, handlers []Handler) *RouteGroup {
+func newRouteGroup(domain string, prefix string, router *Router, handlers []Handler) *RouteGroup {
 	return &RouteGroup{
+		domain:   domain,
 		prefix:   prefix,
 		router:   router,
 		handlers: handlers,
@@ -92,12 +94,12 @@ func (r *RouteGroup) To(methods, path string, handlers ...Handler) *Route {
 // The new group will combine the existing path prefix with the new one.
 // If no handler is provided, the new group will inherit the handlers registered
 // with the current group.
-func (r *RouteGroup) Group(prefix string, handlers ...Handler) *RouteGroup {
+func (r *RouteGroup) Group(domain string, prefix string, handlers ...Handler) *RouteGroup {
 	if len(handlers) == 0 {
 		handlers = make([]Handler, len(r.handlers))
 		copy(handlers, r.handlers)
 	}
-	return newRouteGroup(r.prefix+prefix, r.router, handlers)
+	return newRouteGroup(domain, r.prefix+prefix, r.router, handlers)
 }
 
 // Use registers one or multiple handlers to the current route group.
